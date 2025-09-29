@@ -1,84 +1,47 @@
-import { Text, View, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, BackHandler } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function Home() {
-  const handlePress = (option) => {
-    if (option === "sair") {
-      Alert.alert("Sair", "Encerrando o app...");
-      // Aqui você pode colocar lógica para fechar o app em Android
-      // Exemplo: BackHandler.exitApp();
-    } else {
-      Alert.alert("Clicou em", option);
-    }
-  };
+  const router = useRouter();
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        padding: 20,
-      }}
-    >
-      <Text style={{ color: "#222", fontSize: 28, fontWeight: "bold", marginBottom: 40 }}>
-        Bem-vindo ao App!
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>🎮 Menu Principal</Text>
 
-      {/* Botão Início */}
       <TouchableOpacity
-        style={{
-          backgroundColor: "#4CAF50",
-          paddingVertical: 12,
-          paddingHorizontal: 30,
-          borderRadius: 12,
-          marginBottom: 15,
-        }}
-        onPress={() => handlePress("início")}
+        style={styles.button}
+        onPress={() => router.push("/jogo")}
       >
-        <Text style={{ color: "#fff", fontSize: 18 }}>Início</Text>
+        <Text style={styles.text}>Início</Text>
       </TouchableOpacity>
 
-      {/* Botão Configurações */}
       <TouchableOpacity
-        style={{
-          backgroundColor: "#2196F3",
-          paddingVertical: 12,
-          paddingHorizontal: 30,
-          borderRadius: 12,
-          marginBottom: 15,
-        }}
-        onPress={() => handlePress("configurações")}
+        style={[styles.button, { backgroundColor: "#2196F3" }]}
+        onPress={() => router.push("/configuracoes")}
       >
-        <Text style={{ color: "#fff", fontSize: 18 }}>Configurações</Text>
+        <Text style={styles.text}>Configurações</Text>
       </TouchableOpacity>
 
-      {/* Botão Créditos */}
       <TouchableOpacity
-        style={{
-          backgroundColor: "#9C27B0",
-          paddingVertical: 12,
-          paddingHorizontal: 30,
-          borderRadius: 12,
-          marginBottom: 15,
-        }}
-        onPress={() => handlePress("créditos")}
+        style={[styles.button, { backgroundColor: "#9C27B0" }]}
+        onPress={() => router.push("/creditos")}
       >
-        <Text style={{ color: "#fff", fontSize: 18 }}>Créditos</Text>
+        <Text style={styles.text}>Créditos</Text>
       </TouchableOpacity>
 
-      {/* Botão Sair */}
       <TouchableOpacity
-        style={{
-          backgroundColor: "#F44336",
-          paddingVertical: 12,
-          paddingHorizontal: 30,
-          borderRadius: 12,
-        }}
-        onPress={() => handlePress("sair")}
+        style={[styles.button, { backgroundColor: "#F44336" }]}
+        onPress={() => BackHandler.exitApp()}
       >
-        <Text style={{ color: "#fff", fontSize: 18 }}>Sair</Text>
+        <Text style={styles.text}>Sair</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = {
+  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#111", padding: 20 },
+  title: { color: "#fff", fontSize: 28, fontWeight: "bold", marginBottom: 40 },
+  button: { backgroundColor: "#4CAF50", paddingVertical: 12, paddingHorizontal: 30, borderRadius: 12, marginBottom: 15, width: 220, alignItems: "center" },
+  text: { color: "#fff", fontSize: 18 },
+};
