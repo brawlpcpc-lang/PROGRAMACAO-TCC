@@ -8,6 +8,31 @@ import { useCallback } from 'react';
 import { ImageBackground } from 'react-native';
 
 export default function Jogo() {
+  // Estado do cronômetro com milissegundos
+  const [cronometro, setCronometro] = useState(0); // em ms
+  const [cronometroAtivo, setCronometroAtivo] = useState(false);
+  const [cronometroInicio, setCronometroInicio] = useState(null);
+
+  useEffect(() => {
+    let timer = null;
+    let start = null;
+    if (cronometroAtivo) {
+      start = Date.now() - cronometro;
+      setCronometroInicio(start);
+      timer = setInterval(() => {
+        setCronometro(Date.now() - start);
+      }, 10); // atualiza a cada 10ms para performance
+    }
+    return () => clearInterval(timer);
+  }, [cronometroAtivo]);
+
+  // Função para formatar tempo com milissegundos
+  function formatarTempo(ms) {
+  const min = Math.floor(ms / 60000).toString().padStart(2, '0');
+  const sec = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0');
+  const milis = (ms % 1000).toString().padStart(3, '0');
+  return { min, sec, milis };
+  }
   // Estado para expandir/ocultar lista de músicas locais
   const [showLocalList, setShowLocalList] = useState(false);
   // Estado para música local atual
@@ -233,20 +258,38 @@ export default function Jogo() {
             </View>
           </View>
         </View>
+        {/* Cronômetro grande centralizado */}
+        <View style={styles.row}>
+          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <View style={styles.cronometroArea}>
+              {(() => {
+                const { min, sec, milis } = formatarTempo(cronometro);
+                return (
+                  <Text style={styles.cronometroTexto}>
+                    {min}:{sec}
+                    <Text style={styles.cronometroMilis}>{milis}</Text>
+                  </Text>
+                );
+              })()}
+              <View style={{flexDirection: 'row', gap: 16, marginTop: 12, justifyContent: 'center'}}>
+                <TouchableOpacity onPress={() => setCronometroAtivo(true)} style={styles.cronometroBtn}><Text style={styles.cronometroBtnTexto}>Iniciar</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setCronometroAtivo(false)} style={styles.cronometroBtn}><Text style={styles.cronometroBtnTexto}>Pausar</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => {setCronometro(0); setCronometroAtivo(false); setCronometroInicio(null);}} style={styles.cronometroBtn}><Text style={styles.cronometroBtnTexto}>Zerar</Text></TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
         <View style={styles.row}>
           <View style={styles.box}><Text style={styles.boxText}></Text></View>
           <View style={styles.box}>
             {/* Player Audius */}
             <View style={styles.musicPlayerBg}>
-              <TouchableOpacity style={styles.addMusicBtnAlways} onPress={() => {console.log('Botão adicionar música clicado'); handleAddLocalMusic();}}>
-                <Text style={styles.addMusicBtnText}>Adicionar música do dispositivo</Text>
-              </TouchableOpacity>
               {audiusLoading ? (
                 <Text style={styles.musicNow}>Carregando músicas...</Text>
               ) : audiusTracks.length === 0 ? (
                 <Text style={styles.musicNow}>Nenhuma música encontrada</Text>
               ) : (
-                <>
+                <View>
                   <View style={styles.musicTop}>
                     {/* Se música local tocando, mostra nome dela */}
                     {currentLocalTrack ? (
@@ -268,31 +311,36 @@ export default function Jogo() {
                   </View>
                   <View style={styles.musicControlsMenu}>
                     <TouchableOpacity onPress={handlePrev} style={styles.musicBtn} disabled={loading}>
-                      <Image source={require('../assets/images/anterior.png')} style={{width: 32, height: 32}} />
+                      <Image source={require('../assets/images/icons/anterior.png')} style={{width: 32, height: 32}} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handlePlayPause} style={styles.musicBtn} disabled={loading}>
                       {loading ? (
                         <Text style={styles.musicBtnText}>...</Text>
                       ) : tocando ? (
-                        <Image source={require('../assets/images/pause.png')} style={{width: 32, height: 32}} />
+                        <Image source={require('../assets/images/icons/pause.png')} style={{width: 32, height: 32}} />
                       ) : (
-                        <Image source={require('../assets/images/play.png')} style={{width: 32, height: 32}} />
+                        <Image source={require('../assets/images/icons/play.png')} style={{width: 32, height: 32}} />
                       )}
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleNext} style={styles.musicBtn} disabled={loading}>
-                      <Image source={require('../assets/images/proxima.png')} style={{width: 32, height: 32}} />
+                      <Image source={require('../assets/images/icons/proxima.png')} style={{width: 32, height: 32}} />
                     </TouchableOpacity>
                   </View>
-                </>
-              )}
-              {/* Lista de músicas locais */}
-              {localTracks.length > 0 && (
-                <View style={{marginTop: 12}}>
-                  <TouchableOpacity style={[styles.addMusicBtn, {width: '100%', paddingVertical: 24, borderRadius: 18, marginBottom: 0}]} onPress={() => setShowLocalList(v => !v)}>
-                    <Text style={[styles.addMusicBtnText, {fontSize: 22}]}>{showLocalList ? 'Ocultar músicas do dispositivo' : 'Mostrar músicas do dispositivo'}</Text>
-                  </TouchableOpacity>
+                  {/* Ícones add e list abaixo dos controles */}
+                  <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 12}}>
+                    <TouchableOpacity onPress={() => {console.log('Botão adicionar música clicado'); handleAddLocalMusic();}}>
+                      <Image source={require('../assets/images/icons/add.png')} style={{width: 28, height: 28}} />
+                    </TouchableOpacity>
+                    {localTracks.length > 0 && (
+                      <TouchableOpacity onPress={() => setShowLocalList(v => !v)}>
+                        <Image source={require('../assets/images/icons/list.png')} style={{width: 28, height: 28}} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
               )}
+              {/* Lista de músicas locais */}
+              {/* Lista de músicas locais removida pois controles já estão visíveis */}
             </View>
           </View>
         </View>
@@ -328,6 +376,39 @@ export default function Jogo() {
 }
 
 const styles = StyleSheet.create({
+  cronometroArea: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 24,
+  },
+  cronometroTexto: {
+    fontSize: 64,
+    color: '#ffb300',
+    fontWeight: 'bold',
+    letterSpacing: 2,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  cronometroMilis: {
+    fontSize: 32,
+    color: '#ffb300',
+    fontWeight: 'bold',
+    opacity: 0.7,
+    marginLeft: 4,
+    position: 'relative',
+    top: 8,
+  },
+  cronometroBtn: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+  },
+  cronometroBtnTexto: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   addMusicBtnAlways: {
     backgroundColor: '#ffb300',
     padding: 12,
