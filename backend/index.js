@@ -88,6 +88,15 @@ app.get('/musicas', auth, (req, res) => {
   });
 });
 
+
+// Endpoint para listar todos os usuários cadastrados
+app.get('/users', (req, res) => {
+  db.all('SELECT id, username FROM users', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Erro ao buscar usuários.' });
+    res.json(rows);
+  });
+});
+
 app.listen(3001, () => {
   console.log('API rodando na porta 3001');
 });

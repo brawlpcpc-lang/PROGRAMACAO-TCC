@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+// Altere o IP abaixo para o IP local da sua máquina
+const BACKEND_IP = 'http://10.0.12.148:3001';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -6,10 +10,9 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [isRegister, setIsRegister] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError('');
-    const url = isRegister ? 'http://localhost:3001/register' : 'http://localhost:3001/login';
+  const url = isRegister ? `${BACKEND_IP}/register` : `${BACKEND_IP}/login`;
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -22,42 +25,94 @@ export default function Login({ onLogin }) {
         setIsRegister(false);
         setError('Cadastro realizado! Faça login.');
       } else {
-        localStorage.setItem('token', data.token);
+        await AsyncStorage.setItem('token', data.token);
         onLogin(data.token);
       }
     } catch (err) {
+      console.log('Erro na requisição de login/cadastro:', err);
       setError(err.message);
     }
   };
 
   return (
-    <div style={{ maxWidth: 300, margin: '40px auto', padding: 20, border: '1px solid #ccc', borderRadius: 8 }}>
-      <h2>{isRegister ? 'Cadastro' : 'Login'}</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Usuário"
-          value={username}
-          onChange={e => setUsername(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10 }}
-        />
-        <input
-          type="password"
-          placeholder="Senha"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10 }}
-        />
-        <button type="submit" style={{ width: '100%' }}>
-          {isRegister ? 'Cadastrar' : 'Entrar'}
-        </button>
-      </form>
-      <button onClick={() => setIsRegister(!isRegister)} style={{ marginTop: 10, width: '100%' }}>
-        {isRegister ? 'Já tenho conta' : 'Quero me cadastrar'}
-      </button>
-      {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
-    </div>
+    <View style={styles.container}>
+      <Text style={styles.title}>{isRegister ? 'Cadastro' : 'Login'}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Usuário"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>{isRegister ? 'Cadastrar' : 'Entrar'}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.switchButton} onPress={() => setIsRegister(!isRegister)}>
+        <Text style={styles.switchButtonText}>{isRegister ? 'Já tenho conta' : 'Quero me cadastrar'}</Text>
+      </TouchableOpacity>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    maxWidth: 300,
+    alignSelf: 'center',
+    marginTop: 40,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 4,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    paddingVertical: 10,
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  switchButton: {
+    backgroundColor: '#eee',
+    paddingVertical: 10,
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  switchButtonText: {
+    color: '#007bff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  error: {
+    color: 'red',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+});
