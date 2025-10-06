@@ -10,8 +10,7 @@ function Jogo() {
     // Autenticação: exibe tela de login/cadastro se não houver token
   const [token, setToken] = useState(null);
   const [checkingToken, setCheckingToken] = useState(true);
-
-  useEffect(() => {
+useEffect(() => {
     (async () => {
       const t = await AsyncStorage.getItem('token');
       setToken(t);
@@ -24,6 +23,7 @@ function Jogo() {
     const Login = require('./login').default;
     return <Login onLogin={async (t) => { await AsyncStorage.setItem('token', t); setToken(t); }} />;
   }
+  //
 
     // Músicas salvas do usuário logado
     const [userMusicas, setUserMusicas] = useState([]);
